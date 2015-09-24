@@ -1,2 +1,2 @@
 # serial-mad
-Communication with a MAD14 device
+Communication with a MAD18/18D device

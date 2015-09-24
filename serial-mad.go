@@ -3,7 +3,7 @@
 // Run this code like:
 //  > go run server.go
 //
-// Then open up your browser to http://localhost:8000
+// Then open up your browser to http://localhost:8080
 // Your browser must support HTML5 SSE, of course.
 
 package main
@@ -180,7 +180,7 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read in the template with our SSE JavaScript code.
-	t, err := template.ParseFiles("templates/index.html")
+	t, err := template.ParseFiles("serial-mad-templates/index.html")
 	if err != nil {
 		log.Fatal("WTF dude, error parsing your template.")
 
@@ -194,13 +194,13 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	port, cmd string
+	comPort, cmd string
 	baud      int
 )
 
 func init() {
 	flag.IntVar(&baud, "baud", 9600, "baud rate")
-	flag.StringVar(&port, "port", "com1", "com port")
+	flag.StringVar(&comPort, "port", "com1", "com port")
 	flag.StringVar(&cmd, "cmd", "", "cmd")
 }
 
@@ -210,7 +210,7 @@ func main() {
 
 	flag.Parse()
 	cmd += "\r"
-	fmt.Println("com:", port)
+	fmt.Println("com:", comPort)
 	fmt.Println("baud:", baud)
 	fmt.Println("cmd:", cmd)
 
@@ -237,7 +237,7 @@ func main() {
 	ch := make(chan string)
 	go func() {
 		// Init Serial
-		c := &serial.Config{Name: "COM10", Baud: 9600, ReadTimeout: time.Millisecond * 10000}
+		c := &serial.Config{Name: comPort, Baud: baud, ReadTimeout: time.Millisecond * 10000}
 		s, err := serial.OpenPort(c)
 		if err != nil {
 			log.Fatal("Open port: ", err)
@@ -257,11 +257,8 @@ func main() {
 			if err != nil {
 				log.Fatal("Read from port: ", err)
 			}
-			//			if string(buf[:n]) != "" {
-			//				ch <- string(buf[:n])
-			//			} else {
-			//				ch <- "na1"
-			//			}
+
+			// decide what was read from device
 			if n == 0 {
 				ch <- "no sensor value"
 			}
@@ -271,7 +268,6 @@ func main() {
 			//ch <- string(buf[:n])
 			log.Printf("slice: %q len %d", buf[:n], n)
 			log.Printf("string: %v len %d", string(buf[:n]), len(string(buf[:n])))
-
 		}
 	}()
 
@@ -286,6 +282,8 @@ func main() {
 	// out to any clients that are attached.
 	go func() {
 		for i := 0; ; i++ {
+
+			//read response from device
 			tmp1 := <-ch
 
 			// Create a little message to send to clients,
@@ -303,7 +301,9 @@ func main() {
 	// When we get a request at "/", call `MainPageHandler`
 	// in a new goroutine.
 	http.Handle("/", http.HandlerFunc(MainPageHandler))
-	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css-01"))))
+
+	//css for served template files
+	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css-serial-mad"))))
 
 	// Start the server and listen forever on port 8000.
 	http.ListenAndServe(":8080", nil)
