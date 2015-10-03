@@ -180,7 +180,7 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read in the template with our SSE JavaScript code.
-	t, err := template.ParseFiles("serial-mad-templates/index.html")
+	t, err := template.ParseFiles("templates-serial-mad/index.html")
 	if err != nil {
 		log.Fatal("WTF dude, error parsing your template.")
 
@@ -194,14 +194,18 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	comPort, cmd string
-	baud      int
+	comPort, cmd, httpPort string
+	baud                   int
+	comTimeOut             time.Duration
 )
 
 func init() {
 	flag.IntVar(&baud, "baud", 9600, "baud rate")
+	flag.DurationVar(&comTimeOut, "serialtimeout", time.Second*10, "serial timeout (100ms, 1s, 2s...)")
 	flag.StringVar(&comPort, "port", "com1", "com port")
-	flag.StringVar(&cmd, "cmd", "", "cmd")
+	flag.StringVar(&cmd, "cmd", "%011", "cmd")
+	flag.StringVar(&httpPort, "httpport", "8080", "http listen port")
+
 }
 
 // Main routine
@@ -212,6 +216,8 @@ func main() {
 	cmd += "\r"
 	fmt.Println("com:", comPort)
 	fmt.Println("baud:", baud)
+	fmt.Println("serialtimeout:", comTimeOut)
+	fmt.Println("httpport:", httpPort)
 	fmt.Println("cmd:", cmd)
 
 	//	fmt.Println("com:", *word1Ptr)
@@ -237,7 +243,7 @@ func main() {
 	ch := make(chan string)
 	go func() {
 		// Init Serial
-		c := &serial.Config{Name: comPort, Baud: baud, ReadTimeout: time.Millisecond * 10000}
+		c := &serial.Config{Name: comPort, Baud: baud, ReadTimeout: comTimeOut}
 		s, err := serial.OpenPort(c)
 		if err != nil {
 			log.Fatal("Open port: ", err)
@@ -293,7 +299,7 @@ func main() {
 			b.messages <- fmt.Sprintf("%d - %v - Temperatura - %v", i, time.Now().Format(time.Stamp), tmp1)
 			// Print a nice log message and sleep for 5s.
 			log.Printf("Sent message %d ", i)
-			time.Sleep(5 * 1e9)
+			//time.Sleep(5 * 1e9)
 
 		}
 	}()
@@ -305,6 +311,6 @@ func main() {
 	//css for served template files
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css-serial-mad"))))
 
-	// Start the server and listen forever on port 8000.
-	http.ListenAndServe(":8080", nil)
+	// Start the server and listen forever on port 8080.
+	http.ListenAndServe(":"+httpPort, nil)
 }
