@@ -6,9 +6,8 @@
 <title>Serial MAD</title>
 </head>
 <body>
-
-	Yo {{.}}
-	<br>
+	<h3>Yo {{.}}</h3>
+	<p id="temp-1">Nimic</p>
 
 	<script type="text/javascript">
 		// Create a new HTML5 EventSource
@@ -18,7 +17,8 @@
 		source.onmessage = function(e) {
 
 			// Append the `data` attribute of the message to the DOM.
-			document.body.innerHTML = e.data + '<br>';
+			//document.body.innerHTML = e.data + '<br>';
+			document.getElementById("temp-1").innerHTML = e.data + ' grC';
 		};
 	</script>
 </body>
