@@ -187,7 +187,7 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Render the template, writing to `w`.
-	t.Execute(w, "Duder")
+	t.Execute(w, r.URL.Host)
 
 	// Done.
 	log.Println("Finished HTTP request at ", r.URL.Path)
@@ -203,7 +203,7 @@ func init() {
 	flag.IntVar(&baud, "baud", 9600, "baud rate")
 	flag.DurationVar(&comTimeOut, "serialtimeout", time.Second*10, "serial timeout (100ms, 1s, 2s...)")
 	flag.StringVar(&comPort, "port", "com1", "com port")
-	flag.StringVar(&cmd, "cmd", "%011", "cmd")
+	flag.StringVar(&cmd, "cmd", "#011", "cmd")
 	flag.StringVar(&httpPort, "httpport", "8080", "http listen port")
 
 }
