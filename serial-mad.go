@@ -187,7 +187,7 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Render the template, writing to `w`.
-	t.Execute(w, r.URL.Host)
+	t.Execute(w, r.RemoteAddr)
 
 	// Done.
 	log.Println("Finished HTTP request at ", r.URL.Path)
@@ -269,7 +269,7 @@ func main() {
 				ch <- "no sensor value"
 			}
 			if n > 0 {
-				ch <- string(buf[:n])
+				ch <- string(buf[1:n])
 			}
 			//ch <- string(buf[:n])
 			log.Printf("slice: %q len %d", buf[:n], n)
@@ -296,7 +296,7 @@ func main() {
 			// including the current time.
 			//b.messages <- fmt.Sprintf("%d - the time is %v - Temp - %v", i, time.Now(), buf[:n])
 			//b.messages <- fmt.Sprintf("%d - %v - Temperatura - %v", i, time.Now().Format("3:04:05 PM"), tmp1)
-			b.messages <- fmt.Sprintf("%d - %v - Temperatura - %v", i, time.Now().Format(time.Stamp), tmp1)
+			b.messages <- fmt.Sprintf("%d - %v - Temperatura: %v", i, time.Now().Format(time.Stamp), tmp1)
 			// Print a nice log message and sleep for 5s.
 			log.Printf("Sent message %d ", i)
 			//time.Sleep(5 * 1e9)
