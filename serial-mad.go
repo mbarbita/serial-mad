@@ -174,17 +174,19 @@ func MainPageHandler(w http.ResponseWriter, r *http.Request) {
 	// Did you know Golang's ServeMux matches only the
 	// prefix of the request URL?  It's true.  Here we
 	// insist the path is just "/".
-//	if r.URL.Path != "/" {
-//		//		w.WriteHeader(http.StatusNotFound)
-//		http.Redirect(w, r, "/", http.StatusFound)
-//		return
-//	}
+	if r.URL.Path != "/index.html" {
+		w.WriteHeader(http.StatusNotFound)
+		//		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
 
 	// Read in the template with our SSE JavaScript code.
-	t, err := template.ParseFiles("html5-serial-mad/index.html")
-	if err != nil {
-		log.Fatal("WTF dude, error parsing your template.")
+	//	t, err := template.ParseFiles("html5-serial-mad/index.html")
 
+	t, err := template.ParseFiles("html5-serial-mad/" + r.URL.Path)
+
+	if err != nil {
+		log.Fatal("WTF dude, error parsing your template: " + r.URL.Path)
 	}
 
 	// Render the template, writing to `w`.
@@ -306,10 +308,10 @@ func main() {
 	}()
 
 	//html5 boilerplate for served template files
-	http.Handle("/css", http.StripPrefix("/css", http.FileServer(http.Dir("html5-serial-mad/css"))))
-	http.Handle("/js", http.StripPrefix("/js", http.FileServer(http.Dir("html5-serial-mad/js"))))
-	http.Handle("/js/vendor", http.StripPrefix("/js/vendor", http.FileServer(http.Dir("html5-serial-mad/js/vendor"))))
-	http.Handle("/404.html", http.StripPrefix("/404.html", http.FileServer(http.Dir("html5-serial-mad/404.html"))))
+	//	http.Handle("/css", http.StripPrefix("/css", http.FileServer(http.Dir("html5-serial-mad/css"))))
+	//	http.Handle("/js", http.StripPrefix("/js", http.FileServer(http.Dir("html5-serial-mad/js"))))
+	//	http.Handle("/js/vendor", http.StripPrefix("/js/vendor", http.FileServer(http.Dir("html5-serial-mad/js/vendor"))))
+	//	http.Handle("/404.html", http.StripPrefix("/404.html", http.FileServer(http.Dir("html5-serial-mad/404.html"))))
 
 	// When we get a request at "/index.html", call `MainPageHandler`
 	// in a new goroutine.
